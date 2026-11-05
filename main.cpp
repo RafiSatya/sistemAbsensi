@@ -28,6 +28,10 @@ int jumlahUser = 0;
 int jumlahCourse = 0;
 int jumlahAttendance = 0;
 
+bool sesiAktif = false;
+string sesiKode = "";
+string sesiTanggal = "";
+
 // Login pengguna
 int login() {
     string username, password;
@@ -177,6 +181,134 @@ void daftarMataKuliah() {
     }
 }
 
+// Memeriksa apakah mahasiswa sudah absen
+bool sudahAbsen(string npm) {
+    for (int i = 0; i < jumlahAttendance; i++) {
+        if (attendance[i].npm == npm &&
+            attendance[i].kode == sesiKode &&
+            attendance[i].tanggal == sesiTanggal) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Membuka sesi absensi
+void bukaSesi() {
+    if (sesiAktif) {
+        cout << "Sesi absensi masih aktif!\n";
+        return;
+    }
+
+    if (jumlahCourse == 0) {
+        cout << "Belum ada mata kuliah!\n";
+        return;
+    }
+
+    daftarMataKuliah();
+
+    cout << "Kode mata kuliah: ";
+    cin >> sesiKode;
+
+    bool ditemukan = false;
+
+    for (int i = 0; i < jumlahCourse; i++) {
+        if (courses[i].kode == sesiKode)
+            ditemukan = true;
+    }
+
+    if (!ditemukan) {
+        cout << "Mata kuliah tidak ditemukan!\n";
+        return;
+    }
+
+    cout << "Tanggal (DD-MM-YYYY): ";
+    cin >> sesiTanggal;
+
+    sesiAktif = true;
+
+    cout << "Sesi absensi berhasil dibuka!\n";
+}
+
+// Menutup sesi absensi
+void tutupSesi() {
+    if (!sesiAktif) {
+        cout << "Tidak ada sesi yang aktif!\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahUser; i++) {
+        if (users[i].role == "Mahasiswa" &&
+            !sudahAbsen(users[i].npm) &&
+            jumlahAttendance < 1000) {
+
+            Attendance baru;
+            baru.npm = users[i].npm;
+            baru.kode = sesiKode;
+            baru.tanggal = sesiTanggal;
+            baru.status = "Alpha";
+
+            attendance[jumlahAttendance++] = baru;
+        }
+    }
+
+    sesiAktif = false;
+
+    cout << "Sesi ditutup. Mahasiswa yang belum absen tercatat Alpha.\n";
+}
+
+// Pengisian kehadiran mahasiswa
+void isiKehadiran(int index) {
+    if (!sesiAktif) {
+        cout << "Belum ada sesi absensi yang dibuka!\n";
+        return;
+    }
+
+    if (sudahAbsen(users[index].npm)) {
+        cout << "Kamu sudah mengisi absensi!\n";
+        return;
+    }
+
+    if (jumlahAttendance >= 1000) {
+        cout << "Data absensi penuh!\n";
+        return;
+    }
+
+    int pilih;
+
+    cout << "\n===== ABSENSI MAHASISWA =====\n";
+    cout << "1. Hadir\n";
+    cout << "2. Izin\n";
+    cout << "3. Sakit\n";
+    cout << "Pilih status: ";
+    cin >> pilih;
+
+    Attendance baru;
+    baru.npm = users[index].npm;
+    baru.kode = sesiKode;
+    baru.tanggal = sesiTanggal;
+
+    switch (pilih) {
+        case 1:
+            baru.status = "Hadir";
+            break;
+        case 2:
+            baru.status = "Izin";
+            break;
+        case 3:
+            baru.status = "Sakit";
+            break;
+        default:
+            cout << "Pilihan tidak tersedia!\n";
+            return;
+    }
+
+    attendance[jumlahAttendance++] = baru;
+
+    cout << "Absensi berhasil disimpan!\n";
+}
+
 void menuDosen(int index) {
     int pilih;
 
@@ -185,39 +317,47 @@ void menuDosen(int index) {
         cout << "1. Daftar Mahasiswa\n";
         cout << "2. Tambah Mata Kuliah\n";
         cout << "3. Daftar Mata Kuliah\n";
+        cout << "4. Buka Sesi Absensi\n";
+        cout << "5. Tutup Sesi Absensi\n";
+        cout << "0. Logout\n";
+        cout << "Pilih: ";
+        cin >> pilih;
+
+        switch (pilih) {
+            case 1: daftarMahasiswa(); break;
+            case 2: tambahMataKuliah(); break;
+            case 3: daftarMataKuliah(); break;
+            case 4: bukaSesi(); break;
+            case 5: tutupSesi(); break;
+            case 0: cout << "Logout berhasil!\n"; break;
+            default: cout << "Pilihan tidak tersedia!\n";
+        }
+
+    } while (pilih != 0);
+}
+
+void menuMahasiswa(int index) {
+    int pilih;
+
+    do {
+        cout << "\n===== MENU MAHASISWA =====\n";
+        cout << "1. Isi Absensi\n";
         cout << "0. Logout\n";
         cout << "Pilih: ";
         cin >> pilih;
 
         switch (pilih) {
             case 1:
-                daftarMahasiswa();
+                isiKehadiran(index);
                 break;
-
-            case 2:
-                tambahMataKuliah();
-                break;
-
-            case 3:
-                daftarMataKuliah();
-                break;
-
             case 0:
                 cout << "Logout berhasil!\n";
                 break;
-
             default:
                 cout << "Pilihan tidak tersedia!\n";
         }
 
     } while (pilih != 0);
-}
-
-// Menu mahasiswa
-void menuMahasiswa(int index) {
-    cout << "\nSelamat datang, "
-         << users[index].nama << "!\n";
-    cout << "Menu mahasiswa belum tersedia.\n";
 }
 
 // Program utama
