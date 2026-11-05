@@ -121,6 +121,61 @@ void daftarMahasiswa() {
         cout << "Belum ada mahasiswa terdaftar.\n";
 }
 
+ // Menambahkan mata kuliah
+void tambahMataKuliah() {
+    if (jumlahCourse >= 20) {
+        cout << "Kapasitas mata kuliah penuh!\n";
+        return;
+    }
+
+    Course baru;
+
+    cout << "\n===== TAMBAH MATA KULIAH =====\n";
+    cout << "Kode mata kuliah: ";
+    cin >> baru.kode;
+
+    for (int i = 0; i < jumlahCourse; i++) {
+        if (courses[i].kode == baru.kode) {
+            cout << "Kode mata kuliah sudah digunakan!\n";
+            return;
+        }
+    }
+
+    cin.ignore();
+
+    cout << "Nama mata kuliah: ";
+    getline(cin, baru.nama);
+
+    ofstream file("courses.txt", ios::app);
+
+    if (!file.is_open()) {
+        cout << "Gagal menyimpan mata kuliah!\n";
+        return;
+    }
+
+    file << baru.kode << "|" << baru.nama << endl;
+    file.close();
+
+    courses[jumlahCourse++] = baru;
+
+    cout << "Mata kuliah berhasil ditambahkan!\n";
+}
+
+// Menampilkan mata kuliah
+void daftarMataKuliah() {
+    cout << "\n===== DAFTAR MATA KULIAH =====\n";
+
+    if (jumlahCourse == 0) {
+        cout << "Belum ada mata kuliah.\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahCourse; i++) {
+        cout << i + 1 << ". "
+             << courses[i].kode << " - "
+             << courses[i].nama << endl;
+    }
+}
 
 void menuDosen(int index) {
     int pilih;
@@ -128,6 +183,8 @@ void menuDosen(int index) {
     do {
         cout << "\n===== MENU DOSEN =====\n";
         cout << "1. Daftar Mahasiswa\n";
+        cout << "2. Tambah Mata Kuliah\n";
+        cout << "3. Daftar Mata Kuliah\n";
         cout << "0. Logout\n";
         cout << "Pilih: ";
         cin >> pilih;
@@ -137,8 +194,16 @@ void menuDosen(int index) {
                 daftarMahasiswa();
                 break;
 
+            case 2:
+                tambahMataKuliah();
+                break;
+
+            case 3:
+                daftarMataKuliah();
+                break;
+
             case 0:
-                cout << "Logout berhasil.\n";
+                cout << "Logout berhasil!\n";
                 break;
 
             default:
