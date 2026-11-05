@@ -49,10 +49,103 @@ int login() {
 }
 
 // Menu dosen
+void registrasiMahasiswa() {
+    if (jumlahUser >= 51) {
+        cout << "Kapasitas pengguna penuh!\n";
+        return;
+    }
+
+    User baru;
+    baru.role = "Mahasiswa";
+
+    cin.ignore();
+
+    cout << "\n===== REGISTRASI MAHASISWA =====\n";
+    cout << "Nama     : ";
+    getline(cin, baru.nama);
+
+    cout << "NPM      : ";
+    getline(cin, baru.npm);
+
+    cout << "Kelas    : ";
+    getline(cin, baru.kelas);
+
+    cout << "Username : ";
+    getline(cin, baru.username);
+
+    cout << "Password : ";
+    getline(cin, baru.password);
+
+    for (int i = 0; i < jumlahUser; i++) {
+        if (users[i].npm == baru.npm ||
+            users[i].username == baru.username) {
+            cout << "NPM atau username sudah digunakan!\n";
+            return;
+        }
+    }
+
+    ofstream file("users.txt", ios::app);
+
+    if (!file.is_open()) {
+        cout << "Gagal menyimpan data!\n";
+        return;
+    }
+
+    file << baru.role << "|" << baru.username << "|"
+         << baru.password << "|" << baru.nama << "|"
+         << baru.npm << "|" << baru.kelas << endl;
+
+    file.close();
+
+    users[jumlahUser++] = baru;
+
+    cout << "\nRegistrasi berhasil!\n";
+}
+
+// Menampilkan daftar mahasiswa
+void daftarMahasiswa() {
+    cout << "\n===== DAFTAR MAHASISWA =====\n";
+
+    int nomor = 1;
+
+    for (int i = 0; i < jumlahUser; i++) {
+        if (users[i].role == "Mahasiswa") {
+            cout << nomor++ << ". "
+                 << users[i].nama << " | "
+                 << users[i].npm << " | "
+                 << users[i].kelas << endl;
+        }
+    }
+
+    if (nomor == 1)
+        cout << "Belum ada mahasiswa terdaftar.\n";
+}
+
+
 void menuDosen(int index) {
-    cout << "\nSelamat datang, "
-         << users[index].nama << "!\n";
-    cout << "Menu dosen belum tersedia.\n";
+    int pilih;
+
+    do {
+        cout << "\n===== MENU DOSEN =====\n";
+        cout << "1. Daftar Mahasiswa\n";
+        cout << "0. Logout\n";
+        cout << "Pilih: ";
+        cin >> pilih;
+
+        switch (pilih) {
+            case 1:
+                daftarMahasiswa();
+                break;
+
+            case 0:
+                cout << "Logout berhasil.\n";
+                break;
+
+            default:
+                cout << "Pilihan tidak tersedia!\n";
+        }
+
+    } while (pilih != 0);
 }
 
 // Menu mahasiswa
@@ -126,7 +219,7 @@ int main() {
             }
         }
         else if (pilih == 2) {
-            cout << "Fitur registrasi akan ditambahkan Mitha.\n";
+            registrasiMahasiswa();
         }
         else if (pilih != 0) {
             cout << "Pilihan tidak tersedia!\n";
