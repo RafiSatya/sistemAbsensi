@@ -11,7 +11,7 @@ struct User {
 
 // Struktur data mata kuliah
 struct Course {
-    string kode, nama;
+    string kode, nama, namaDosen, npmDosen;
 };
 
 // Struktur data absensi
@@ -53,6 +53,7 @@ int login() {
 }
 
 // Menu dosen
+
 void registrasiMahasiswa() {
     if (jumlahUser >= 51) {
         cout << "Kapasitas pengguna penuh!\n";
@@ -125,15 +126,31 @@ void daftarMahasiswa() {
         cout << "Belum ada mahasiswa terdaftar.\n";
 }
 
- // Menambahkan mata kuliah
-void tambahMataKuliah() {
+ // Menambahkan mata kuliah milik dosen yang sedang login
+void tambahMataKuliah(int index) {
     if (jumlahCourse >= 20) {
         cout << "Kapasitas mata kuliah penuh!\n";
         return;
     }
 
-    Course baru;
+    // Akun dosen bawaan belum memiliki NPM, jadi lengkapi saat pertama digunakan.
+    if (users[index].npm.empty()) {
+        cout << "Nama dosen: ";
+        cin.ignore();
+        getline(cin, users[index].nama);
+        cout << "NPM dosen: ";
+        getline(cin, users[index].npm);
 
+        ofstream update("users.txt");
+        for (int i = 0; i < jumlahUser; i++) {
+            update << users[i].role << "|" << users[i].username << "|"
+                   << users[i].password << "|" << users[i].nama << "|"
+                   << users[i].npm << "|" << users[i].kelas << "\n";
+        }
+        update.close();
+    }
+
+    Course baru;
     cout << "\n===== TAMBAH MATA KULIAH =====\n";
     cout << "Kode mata kuliah: ";
     cin >> baru.kode;
@@ -146,39 +163,106 @@ void tambahMataKuliah() {
     }
 
     cin.ignore();
-
     cout << "Nama mata kuliah: ";
     getline(cin, baru.nama);
 
-    ofstream file("courses.txt", ios::app);
+    baru.namaDosen = users[index].nama;
+    baru.npmDosen = users[index].npm;
 
+    ofstream file("courses.txt", ios::app);
     if (!file.is_open()) {
         cout << "Gagal menyimpan mata kuliah!\n";
         return;
     }
 
-    file << baru.kode << "|" << baru.nama << endl;
+    file << baru.kode << "|" << baru.nama << "|"
+         << baru.namaDosen << "|" << baru.npmDosen << "\n";
     file.close();
 
     courses[jumlahCourse++] = baru;
-
     cout << "Mata kuliah berhasil ditambahkan!\n";
 }
 
-// Menampilkan mata kuliah
+// Menampilkan seluruh mata kuliah beserta dosen pengampu
 void daftarMataKuliah() {
     cout << "\n===== DAFTAR MATA KULIAH =====\n";
-
     if (jumlahCourse == 0) {
         cout << "Belum ada mata kuliah.\n";
         return;
     }
 
     for (int i = 0; i < jumlahCourse; i++) {
-        cout << i + 1 << ". "
-             << courses[i].kode << " - "
-             << courses[i].nama << endl;
+        cout << "\n" << i + 1 << ". " << courses[i].kode
+             << " - " << courses[i].nama
+             << "\nDosen     : " << courses[i].namaDosen
+             << "\nNPM Dosen : " << courses[i].npmDosen << "\n";
     }
+}
+
+// Memuat mata kuliah beserta identitas dosen pengampu
+void muatCourse() {
+    ifstream file("courses.txt");
+    string baris;
+
+    while (getline(file, baris) && jumlahCourse < 20) {
+        size_t p1 = baris.find('|');
+        size_t p2 = (p1 == string::npos) ? string::npos : baris.find('|', p1 + 1);
+        size_t p3 = (p2 == string::npos) ? string::npos : baris.find('|', p2 + 1);
+
+        // Format baru: kode|nama|namaDosen|npmDosen
+        if (p1 == string::npos || p2 == string::npos || p3 == string::npos)
+            continue;
+
+        Course c;
+        c.kode = baris.substr(0, p1);
+        c.nama = baris.substr(p1 + 1, p2 - p1 - 1);
+        c.namaDosen = baris.substr(p2 + 1, p3 - p2 - 1);
+        c.npmDosen = baris.substr(p3 + 1);
+        courses[jumlahCourse++] = c;
+    }
+    file.close();
+}
+
+// Menyimpan seluruh data absensi
+void simpanAttendance() {
+    ofstream file("attendance.txt");
+
+    for (int i = 0; i < jumlahAttendance; i++) {
+        file << attendance[i].npm << "|"
+             << attendance[i].kode << "|"
+             << attendance[i].status << "|"
+             << attendance[i].tanggal << endl;
+    }
+
+    file.close();
+}
+
+// Memuat data absensi
+void muatAttendance() {
+    ifstream file("attendance.txt");
+    string baris;
+
+    while (getline(file, baris) && jumlahAttendance < 1000) {
+        size_t p1 = baris.find('|');
+        size_t p2 = baris.find('|', p1 + 1);
+        size_t p3 = baris.find('|', p2 + 1);
+
+        if (p1 == string::npos ||
+            p2 == string::npos ||
+            p3 == string::npos)
+            continue;
+
+        Attendance a;
+
+        a.npm = baris.substr(0, p1);
+        a.kode = baris.substr(p1 + 1, p2 - p1 - 1);
+        a.status = baris.substr(p2 + 1, p3 - p2 - 1);
+        a.tanggal = baris.substr(p3 + 1);
+
+        attendance[jumlahAttendance++] = a;
+    }
+
+    file.close();
 }
 
 // Memeriksa apakah mahasiswa sudah absen
@@ -194,47 +278,61 @@ bool sudahAbsen(string npm) {
     return false;
 }
 
-// Membuka sesi absensi
-void bukaSesi() {
+// Membuka sesi hanya untuk mata kuliah milik dosen yang login
+void bukaSesi(int index) {
     if (sesiAktif) {
         cout << "Sesi absensi masih aktif!\n";
         return;
     }
-
     if (jumlahCourse == 0) {
         cout << "Belum ada mata kuliah!\n";
         return;
     }
 
     daftarMataKuliah();
-
+    string kode;
     cout << "Kode mata kuliah: ";
-    cin >> sesiKode;
+    cin >> kode;
 
-    bool ditemukan = false;
-
+    int posisi = -1;
     for (int i = 0; i < jumlahCourse; i++) {
-        if (courses[i].kode == sesiKode)
-            ditemukan = true;
+        if (courses[i].kode == kode) {
+            posisi = i;
+            break;
+        }
     }
 
-    if (!ditemukan) {
+    if (posisi == -1) {
         cout << "Mata kuliah tidak ditemukan!\n";
         return;
     }
+    if (courses[posisi].npmDosen != users[index].npm) {
+        cout << "Anda bukan dosen pengampu mata kuliah ini!\n";
+        return;
+    }
 
+    sesiKode = kode;
     cout << "Tanggal (DD-MM-YYYY): ";
     cin >> sesiTanggal;
-
     sesiAktif = true;
-
     cout << "Sesi absensi berhasil dibuka!\n";
 }
 
 // Menutup sesi absensi
-void tutupSesi() {
+void tutupSesi(int index) {
     if (!sesiAktif) {
         cout << "Tidak ada sesi yang aktif!\n";
+        return;
+    }
+
+    bool pemilik = false;
+    for (int i = 0; i < jumlahCourse; i++) {
+        if (courses[i].kode == sesiKode &&
+            courses[i].npmDosen == users[index].npm)
+            pemilik = true;
+    }
+    if (!pemilik) {
+        cout << "Hanya dosen pengampu yang dapat menutup sesi ini!\n";
         return;
     }
 
@@ -252,6 +350,8 @@ void tutupSesi() {
             attendance[jumlahAttendance++] = baru;
         }
     }
+
+    simpanAttendance();
 
     sesiAktif = false;
 
@@ -306,7 +406,43 @@ void isiKehadiran(int index) {
 
     attendance[jumlahAttendance++] = baru;
 
+    simpanAttendance();
+
     cout << "Absensi berhasil disimpan!\n";
+}
+
+// Rekap hanya menampilkan mata kuliah milik dosen yang login
+void rekapAbsensi(int index) {
+    cout << "\n===== REKAP ABSENSI =====\n";
+    bool ada = false;
+
+    for (int i = 0; i < jumlahAttendance; i++) {
+        bool milikDosen = false;
+        for (int j = 0; j < jumlahCourse; j++) {
+            if (courses[j].kode == attendance[i].kode &&
+                courses[j].npmDosen == users[index].npm)
+                milikDosen = true;
+        }
+        if (!milikDosen) continue;
+
+        ada = true;
+        string nama = "Tidak ditemukan";
+        for (int j = 0; j < jumlahUser; j++) {
+            if (users[j].npm == attendance[i].npm) {
+                nama = users[j].nama;
+                break;
+            }
+        }
+
+        cout << "\nNama    : " << nama
+             << "\nNPM     : " << attendance[i].npm
+             << "\nKode MK : " << attendance[i].kode
+             << "\nTanggal : " << attendance[i].tanggal
+             << "\nStatus  : " << attendance[i].status
+             << "\n-------------------------\n";
+    }
+
+    if (!ada) cout << "Belum ada rekap untuk mata kuliah Anda.\n";
 }
 
 void menuDosen(int index) {
@@ -319,16 +455,18 @@ void menuDosen(int index) {
         cout << "3. Daftar Mata Kuliah\n";
         cout << "4. Buka Sesi Absensi\n";
         cout << "5. Tutup Sesi Absensi\n";
+        cout << "6. Rekap Absensi\n";
         cout << "0. Logout\n";
         cout << "Pilih: ";
         cin >> pilih;
 
         switch (pilih) {
             case 1: daftarMahasiswa(); break;
-            case 2: tambahMataKuliah(); break;
+            case 2: tambahMataKuliah(index); break;
             case 3: daftarMataKuliah(); break;
-            case 4: bukaSesi(); break;
-            case 5: tutupSesi(); break;
+            case 4: bukaSesi(index); break;
+            case 5: tutupSesi(index); break;
+            case 6: rekapAbsensi(index); break;
             case 0: cout << "Logout berhasil!\n"; break;
             default: cout << "Pilihan tidak tersedia!\n";
         }
@@ -336,18 +474,23 @@ void menuDosen(int index) {
     } while (pilih != 0);
 }
 
+// Menu mahasiswa
 void menuMahasiswa(int index) {
     int pilih;
 
     do {
         cout << "\n===== MENU MAHASISWA =====\n";
-        cout << "1. Isi Absensi\n";
+        cout << "1. Lihat Mata Kuliah\n";
+        cout << "2. Isi Absensi\n";
         cout << "0. Logout\n";
         cout << "Pilih: ";
         cin >> pilih;
 
         switch (pilih) {
             case 1:
+                daftarMataKuliah();
+                break;
+            case 2:
                 isiKehadiran(index);
                 break;
             case 0:
@@ -401,6 +544,10 @@ int main() {
     }
 
     file.close();
+
+    // Memuat data mata kuliah dan absensi
+    muatCourse();
+    muatAttendance();
 
     do {
         cout << "\n===== APLIKASI ABSENSI =====\n";
