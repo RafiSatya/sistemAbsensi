@@ -53,7 +53,14 @@ int login() {
 }
 
 // Menu dosen
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
+>>>>>>> e829e3cfb59278650badceef93572786d40e78c7
 void registrasiMahasiswa() {
     if (jumlahUser >= 51) {
         cout << "Kapasitas pengguna penuh!\n";
@@ -198,6 +205,71 @@ void daftarMataKuliah() {
              << "\nNPM Dosen : " << courses[i].npmDosen << "\n";
     }
 }
+<<<<<<< HEAD
+// Memeriksa apakah mahasiswa sudah absen
+// Memuat data mata kuliah
+void muatCourse() {
+    ifstream file("courses.txt");
+    string baris;
+
+    while (getline(file, baris) && jumlahCourse < 20) {
+        size_t p = baris.find('|');
+
+        if (p == string::npos)
+            continue;
+
+        courses[jumlahCourse].kode = baris.substr(0, p);
+        courses[jumlahCourse].nama = baris.substr(p + 1);
+
+        jumlahCourse++;
+    }
+
+    file.close();
+}
+
+// Menyimpan seluruh data absensi
+void simpanAttendance() {
+    ofstream file("attendance.txt");
+
+    for (int i = 0; i < jumlahAttendance; i++) {
+        file << attendance[i].npm << "|"
+             << attendance[i].kode << "|"
+             << attendance[i].status << "|"
+             << attendance[i].tanggal << endl;
+    }
+
+    file.close();
+}
+
+// Memuat data absensi
+void muatAttendance() {
+    ifstream file("attendance.txt");
+    string baris;
+
+    while (getline(file, baris) && jumlahAttendance < 1000) {
+        size_t p1 = baris.find('|');
+        size_t p2 = baris.find('|', p1 + 1);
+        size_t p3 = baris.find('|', p2 + 1);
+
+        if (p1 == string::npos ||
+            p2 == string::npos ||
+            p3 == string::npos)
+            continue;
+
+        Attendance a;
+
+        a.npm = baris.substr(0, p1);
+        a.kode = baris.substr(p1 + 1, p2 - p1 - 1);
+        a.status = baris.substr(p2 + 1, p3 - p2 - 1);
+        a.tanggal = baris.substr(p3 + 1);
+
+        attendance[jumlahAttendance++] = a;
+    }
+
+    file.close();
+}
+
+=======
 
 // Memuat mata kuliah beserta identitas dosen pengampu
 void muatCourse() {
@@ -266,6 +338,7 @@ void muatAttendance() {
 }
 
 // Memeriksa apakah mahasiswa sudah absen
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
 bool sudahAbsen(string npm) {
     for (int i = 0; i < jumlahAttendance; i++) {
         if (attendance[i].npm == npm &&
@@ -351,8 +424,16 @@ void tutupSesi(int index) {
         }
     }
 
+<<<<<<< HEAD
     simpanAttendance();
 
+=======
+<<<<<<< HEAD
+    simpanAttendance();
+
+=======
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
+>>>>>>> e829e3cfb59278650badceef93572786d40e78c7
     sesiAktif = false;
 
     cout << "Sesi ditutup. Mahasiswa yang belum absen tercatat Alpha.\n";
@@ -406,11 +487,16 @@ void isiKehadiran(int index) {
 
     attendance[jumlahAttendance++] = baru;
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> e829e3cfb59278650badceef93572786d40e78c7
     simpanAttendance();
 
     cout << "Absensi berhasil disimpan!\n";
 }
 
+<<<<<<< HEAD
 // Rekap hanya menampilkan mata kuliah milik dosen yang login
 void rekapAbsensi(int index) {
     cout << "\n===== REKAP ABSENSI =====\n";
@@ -427,6 +513,20 @@ void rekapAbsensi(int index) {
 
         ada = true;
         string nama = "Tidak ditemukan";
+=======
+// Rekapitulasi absensi mahasiswa
+void rekapAbsensi() {
+    cout << "\n===== REKAP ABSENSI =====\n";
+
+    if (jumlahAttendance == 0) {
+        cout << "Belum ada data absensi.\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahAttendance; i++) {
+        string nama = "Tidak ditemukan";
+
+>>>>>>> e829e3cfb59278650badceef93572786d40e78c7
         for (int j = 0; j < jumlahUser; j++) {
             if (users[j].npm == attendance[i].npm) {
                 nama = users[j].nama;
@@ -434,6 +534,7 @@ void rekapAbsensi(int index) {
             }
         }
 
+<<<<<<< HEAD
         cout << "\nNama    : " << nama
              << "\nNPM     : " << attendance[i].npm
              << "\nKode MK : " << attendance[i].kode
@@ -445,6 +546,22 @@ void rekapAbsensi(int index) {
     if (!ada) cout << "Belum ada rekap untuk mata kuliah Anda.\n";
 }
 
+=======
+        cout << "\nNama    : " << nama << endl;
+        cout << "NPM     : " << attendance[i].npm << endl;
+        cout << "Kode MK : " << attendance[i].kode << endl;
+        cout << "Tanggal : " << attendance[i].tanggal << endl;
+        cout << "Status  : " << attendance[i].status << endl;
+        cout << "-------------------------\n";
+    }
+}
+
+=======
+    cout << "Absensi berhasil disimpan!\n";
+}
+
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
+>>>>>>> e829e3cfb59278650badceef93572786d40e78c7
 void menuDosen(int index) {
     int pilih;
 
@@ -455,7 +572,14 @@ void menuDosen(int index) {
         cout << "3. Daftar Mata Kuliah\n";
         cout << "4. Buka Sesi Absensi\n";
         cout << "5. Tutup Sesi Absensi\n";
+<<<<<<< HEAD
         cout << "6. Rekap Absensi\n";
+=======
+<<<<<<< HEAD
+        cout << "6. Rekap Absensi\n";
+=======
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
+>>>>>>> e829e3cfb59278650badceef93572786d40e78c7
         cout << "0. Logout\n";
         cout << "Pilih: ";
         cin >> pilih;
@@ -464,9 +588,18 @@ void menuDosen(int index) {
             case 1: daftarMahasiswa(); break;
             case 2: tambahMataKuliah(index); break;
             case 3: daftarMataKuliah(); break;
+<<<<<<< HEAD
             case 4: bukaSesi(index); break;
             case 5: tutupSesi(index); break;
             case 6: rekapAbsensi(index); break;
+=======
+            case 4: bukaSesi(); break;
+            case 5: tutupSesi(); break;
+<<<<<<< HEAD
+            case 6: rekapAbsensi(); break;
+=======
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
+>>>>>>> e829e3cfb59278650badceef93572786d40e78c7
             case 0: cout << "Logout berhasil!\n"; break;
             default: cout << "Pilihan tidak tersedia!\n";
         }
