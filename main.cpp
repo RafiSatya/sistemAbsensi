@@ -53,7 +53,10 @@ int login() {
 }
 
 // Menu dosen
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
 void registrasiMahasiswa() {
     if (jumlahUser >= 51) {
         cout << "Kapasitas pengguna penuh!\n";
@@ -181,6 +184,7 @@ void daftarMataKuliah() {
              << courses[i].nama << endl;
     }
 }
+<<<<<<< HEAD
 // Memeriksa apakah mahasiswa sudah absen
 // Memuat data mata kuliah
 void muatCourse() {
@@ -244,6 +248,10 @@ void muatAttendance() {
     file.close();
 }
 
+=======
+
+// Memeriksa apakah mahasiswa sudah absen
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
 bool sudahAbsen(string npm) {
     for (int i = 0; i < jumlahAttendance; i++) {
         if (attendance[i].npm == npm &&
@@ -315,8 +323,11 @@ void tutupSesi() {
         }
     }
 
+<<<<<<< HEAD
     simpanAttendance();
 
+=======
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
     sesiAktif = false;
 
     cout << "Sesi ditutup. Mahasiswa yang belum absen tercatat Alpha.\n";
@@ -370,6 +381,7 @@ void isiKehadiran(int index) {
 
     attendance[jumlahAttendance++] = baru;
 
+<<<<<<< HEAD
     simpanAttendance();
 
     cout << "Absensi berhasil disimpan!\n";
@@ -403,6 +415,11 @@ void rekapAbsensi() {
     }
 }
 
+=======
+    cout << "Absensi berhasil disimpan!\n";
+}
+
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
 void menuDosen(int index) {
     int pilih;
 
@@ -413,7 +430,10 @@ void menuDosen(int index) {
         cout << "3. Daftar Mata Kuliah\n";
         cout << "4. Buka Sesi Absensi\n";
         cout << "5. Tutup Sesi Absensi\n";
+<<<<<<< HEAD
         cout << "6. Rekap Absensi\n";
+=======
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
         cout << "0. Logout\n";
         cout << "Pilih: ";
         cin >> pilih;
@@ -424,7 +444,10 @@ void menuDosen(int index) {
             case 3: daftarMataKuliah(); break;
             case 4: bukaSesi(); break;
             case 5: tutupSesi(); break;
+<<<<<<< HEAD
             case 6: rekapAbsensi(); break;
+=======
+>>>>>>> 0f27a5188ac1e078c9af939e00b2bce08e122e3b
             case 0: cout << "Logout berhasil!\n"; break;
             default: cout << "Pilihan tidak tersedia!\n";
         }
@@ -432,7 +455,6 @@ void menuDosen(int index) {
     } while (pilih != 0);
 }
 
-// Menu mahasiswa
 void menuMahasiswa(int index) {
     int pilih;
 
